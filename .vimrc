@@ -10,10 +10,8 @@ let s:darwin = has('mac')
 set nocompatible
 
 " ----------------------------------------------------------------------------
-" Setup Vundle(x) Vim-plug to manage plugins
+" Setup Vim-plug to manage plugins
 " ----------------------------------------------------------------------------
-"set rtp+=~/.vim/bundle/Vundle.vim
-"call vundle#begin()
 
 call plug#begin()
 
@@ -59,14 +57,15 @@ Plug 'easymotion/vim-easymotion'
 Plug 'vim-scripts/taglist.vim'
 Plug 'milkypostman/vim-togglelist'
 Plug 'mileszs/ack.vim'
-Plug 'moll/vim-bbye'
+Plug 'moll/vim-bbye' "for Bdelete
 
 " Git
 Plug 'tpope/vim-fugitive'
 Plug 'airblade/vim-gitgutter'
 
 " Lint
-Plug 'neomake/neomake'
+" Plug 'neomake/neomake'
+Plug 'w0rp/ale'
 
 " Lang
 Plug 'Shougo/echodoc.vim'
@@ -108,11 +107,9 @@ Plug 'xolox/vim-session'
 
 set rtp+=/usr/local/opt/fzf
 Plug 'junegunn/fzf.vim' | Plug '~/Projects/fzf-filemru-darwin'
-"Plug 'junegunn/fzf.vim'
 
 " Plug 'edkolev/tmuxline.vim'
 
-"call vundle#end()            " required
 call plug#end()
 
 " ----------------------------------------------------------------------------
@@ -268,25 +265,6 @@ set indentkeys+=0.
 highlight clear SignColumn      " SignColumn should match background
 highlight clear LineNr          " Current line number row will have same background color in relative mode
 
-"if has('cmdline_info')
-"set ruler                   " Show the ruler
-"set rulerformat=%30(%=\:b%n%y%m%r%w\ %l,%c%V\ %P%) " A ruler on steroids
-"set showcmd                 " Show partial commands in status line and
-"endif
-
-"if has('statusline')
-"set laststatus=2
-"" Broken down into easily includeable segments
-"set statusline=%<%f\                     " Filename
-"set statusline+=%w%h%m%r                 " Options
-"if !exists('g:override_spf13_bundles')
-"set statusline+=%{fugitive#statusline()} " Git Hotness
-"endif
-"set statusline+=\ [%{&ff}/%Y]            " Filetype
-"set statusline+=\ [%{getcwd()}]          " Current dir
-"set statusline+=%=%-14.(%l,%c%V%)\ %p%%  " Right aligned file nav info
-"endif
-
 command! -nargs=0 Sw w !sudo tee % > /dev/null
 
 " ----------------------------------------------------------------------------
@@ -299,61 +277,28 @@ autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
 autocmd FileType python setlocal ts=4 sts=4 sw=4 expandtab
 autocmd FileType groovy setlocal ts=4 sts=4 sw=4 expandtab
 
-" Customisations based on house-style (arbitrary)
-" autocmd FileType html setlocal ts=2 sts=2 sw=2 expandtab
-" autocmd FileType css setlocal ts=2 sts=2 sw=2 expandtab
-" autocmd FileType javascript setlocal ts=4 sts=4 sw=4 noexpandtab
-
-" Treat .rss files as XML
-autocmd BufNewFile,BufRead *.rss setfiletype xml
-
-" .twig files use HTML syntax
-" autocmd BufNewFile,BufRead *.twig setlocal ft=html
-
-" .jade files use Jade syntax
-autocmd BufNewFile,BufRead *.jade setlocal ft=jade
-
-" .styl files use Stylus syntax
-autocmd BufNewFile,BufReadPost *.styl set filetype=stylus
-autocmd BufNewFile,BufReadPost *.css set filetype=css
-autocmd BufNewFile,BufRead *.styl set filetype=stylus
-autocmd BufNewFile,BufRead *.coffee set filetype=coffee
-
-"autocmd BufNewFile,BufRead *.php set filetype=html.css.javascript.php
-autocmd BufNewFile,BufRead *.vue set filetype=html.javascript.sass
-
+" Golang
 augroup go
   autocmd!
-
   " Show by default 4 spaces for a tab
   autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
-
   " :GoBuild and :GoTestCompile
   autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
-
   " :GoTest
   autocmd FileType go nmap <leader>t  <Plug>(go-test)
-
   " :GoRun
   autocmd FileType go nmap <silent> <leader>r :Topen <bar> T go run *.go <cr>
-
   " :GoDoc
   autocmd FileType go nmap <Leader>d <Plug>(go-doc)
-
   " :GoCoverageToggle
   autocmd FileType go nmap <Leader>o <Plug>(go-coverage-toggle)
-
   " :GoInfo
   autocmd FileType go nmap <c-i> <Plug>(go-info)
-
   " :GoMetaLinter
   autocmd FileType go nmap <Leader>l <Plug>(go-metalinter)
-
   " :GoRename
   autocmd FileType go nmap <Leader>re <Plug>(go-rename)
-
   autocmd FileType go nmap <c-]> <Plug>(go-def)
-
   " :GoAlternate  commands :A, :AV, :AS and :AT
   autocmd Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
   autocmd Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
@@ -371,16 +316,19 @@ function! s:build_go_files()
   endif
 endfunction
 
-" augroup c
-  " autocmd Filetype c,asm :TlistOpen
-" augroup END
-
+" Typescript
 if exists('g:gui_oni')
   augroup typescript
     autocmd FileType typescript let b:deoplete_disable_auto_complete=1
     autocmd FileType typescript nmap <C-]> gd
   augroup END
 endif
+
+augroup typescript
+  autocmd!
+  autocmd FileType typescript nmap <silent> <c-i> :TSType<cr>
+  autocmd FileType Typescript nmap <Leader>re :TSRefs<cr>
+augroup END
 
 " ----------------------------------------------------------------------------
 " Key mappings
@@ -603,14 +551,14 @@ let g:jsdoc_input_description=1
 nmap <silent> <leader>j <Plug>(jsdoc)
 
 " Neomake
-autocmd! BufWritePost * Neomake
-let g:neomake_javascript_enabled_makers = ['eslint']
+" autocmd! BufWritePost * Neomake
+" let g:neomake_javascript_enabled_makers = ['eslint']
 
-if exists('g:gui_oni')
-  let g:neomake_typescript_enabled_makers = ['tslint']
-endif
+" if exists('g:gui_oni')
+  " let g:neomake_typescript_enabled_makers = ['tslint']
+" endif
 
-let g:neomake_go_enabled_makers = []
+" let g:neomake_go_enabled_makers = []
 
 " Neovim
 let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1
@@ -698,15 +646,16 @@ let g:go_metalinter_excludes = ["'or be unexported'"]
 " deoplete-go
 let g:deoplete#sources#go#gocode_binary = "/Users/jsl/go/bin/gocode"
 
-" typescript
+" nvim_typescript
 if !exists('g:gui_oni')
-  let g:nvim_typescript#type_info_on_hold = 1
+  " let g:nvim_typescript#type_info_on_hold = 1
 endif
 let g:nvim_typescript#default_mappings = 1
 
 " jsx
 let g:jsx_ext_required = 0
 
+" tagbar
 let g:tagbar_type_typescript = {
   \ 'ctagsbin' : 'tstags',
   \ 'ctagsargs' : '-f-',
@@ -735,5 +684,13 @@ let g:NERDTrimTrailingWhitespace = 1
 
 " taglist
 let g:Tlist_Use_Right_Window = 1
+
+" ale
+let g:ale_sign_column_always = 1
+nmap <silent> <leader>k <Plug>(ale_previous_wrap)
+nmap <silent> <leader>j <Plug>(ale_next_wrap)
+let g:ale_linters = {
+\   'typescript': ['tslint', 'tsserver', 'typecheck'],
+\}
 
 filetype plugin indent on
