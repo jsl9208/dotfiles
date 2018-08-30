@@ -620,7 +620,7 @@ endif
 " Neoterm
 nnoremap <silent> <c-t> :Ttoggle<cr>
 tnoremap <silent> <c-t> <c-\><c-n>:Ttoggle<cr>
-let g:neoterm_size=15
+" let g:neoterm_size=15
 
 " vim-markdown
 let g:vim_markdown_conceal = 0
