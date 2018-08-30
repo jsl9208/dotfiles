@@ -509,7 +509,7 @@ function! g:Multiple_cursors_after()
   let g:deoplete#disable_auto_complete = 0
 endfunction
 
-call deoplete#custom#set('ultisnips', 'rank', 1000)
+call deoplete#custom#source('ultisnips', 'rank', 1000)
 
 " UltiSnips
 let g:UltiSnipsExpandTrigger       ="<c-j>"
