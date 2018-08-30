@@ -121,8 +121,6 @@ let mapleader = ','
 " Init
 " ----------------------------------------------------------------------------
 if exists('g:gui_oni')
-  filetype off                  " required
-
   " Turn off statusbar, because it is externalized
   set noshowmode
   set noruler
@@ -131,7 +129,6 @@ if exists('g:gui_oni')
 
   set listchars=tab:→\ ,trail:·,extends:#,nbsp:. " Highlight problematic whitespace
 else
-  filetype on
   color solarized
   set laststatus=2
   set listchars=tab:→\ ,trail:•,extends:#,nbsp:. " Highlight problematic whitespace
@@ -620,7 +617,7 @@ endif
 " Neoterm
 nnoremap <silent> <c-t> :Ttoggle<cr>
 tnoremap <silent> <c-t> <c-\><c-n>:Ttoggle<cr>
-" let g:neoterm_size=15
+let g:neoterm_default_mod = "botright"
 
 " vim-markdown
 let g:vim_markdown_conceal = 0
@@ -651,6 +648,7 @@ if !exists('g:gui_oni')
   " let g:nvim_typescript#type_info_on_hold = 1
 endif
 let g:nvim_typescript#default_mappings = 1
+let g:nvim_typescript#diagnosticsEnable = 0
 
 " jsx
 let g:jsx_ext_required = 0
