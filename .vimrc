@@ -37,8 +37,9 @@ Plug 'mbbill/undotree', { 'on': 'UndotreeToggle' }
 " Plug 'ternjs/tern_for_vim'
 Plug 'Shougo/deoplete.nvim'
 Plug 'zchee/deoplete-go', { 'do': 'make'}
+Plug 'zchee/deoplete-jedi'
 "Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
-Plug 'ervandew/supertab'
+" Plug 'ervandew/supertab'
 Plug 'scrooloose/nerdcommenter'
 Plug 'terryma/vim-multiple-cursors'
 Plug 'kana/vim-textobj-user' | Plug 'kana/vim-textobj-entire'
@@ -492,12 +493,15 @@ nnoremap <silent> <leader>gg :SignifyToggle<CR>
 " Use deoplete.
 let g:deoplete#enable_at_startup = 1
 let g:deoplete#file#enable_buffer_path = 1
-let g:tern_request_timeout = 1
-let g:tern_show_signature_in_pum = 0
-let g:tern_remove_async_await = 1
+" let g:tern_request_timeout = 1
+" let g:tern_show_signature_in_pum = 0
+" let g:tern_remove_async_await = 1
 
 let g:SuperTabDefaultCompletionType = "<c-n>"
 autocmd CompleteDone * pclose!
+
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 function! g:Multiple_cursors_before()
   let g:deoplete#disable_auto_complete = 1
@@ -556,9 +560,6 @@ nmap <silent> <leader>j <Plug>(jsdoc)
 " endif
 
 " let g:neomake_go_enabled_makers = []
-
-" Neovim
-let $NVIM_TUI_ENABLE_CURSOR_SHAPE=1
 
 " Fzf
 let g:fzf_command_prefix = 'Fzf'
@@ -690,5 +691,13 @@ nmap <silent> <leader>j <Plug>(ale_next_wrap)
 let g:ale_linters = {
 \   'typescript': ['tslint', 'tsserver', 'typecheck'],
 \}
+
+" pyenv
+" let g:python_host_prog = '/Users/jsl/.pyenv/versions/neovim2/bin/python'
+let g:python3_host_prog = '/Users/jsl/.pyenv/versions/neovim3/bin/python'
+
+" let g:deoplete#enable_profile = 1
+" call deoplete#enable_logging('DEBUG', 'deoplete.log')
+" let g:deoplete#sources#jedi#debug_server = 1
 
 filetype plugin indent on
