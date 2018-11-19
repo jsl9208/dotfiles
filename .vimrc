@@ -55,7 +55,7 @@ Plug 'Yggdroot/indentLine'
 Plug 'scrooloose/nerdtree', { 'on': ['NERDTreeTabsToggle', 'NERDTreeFind', 'NerdTreeToggle' ] } | Plug 'jistr/vim-nerdtree-tabs'
 Plug 'easymotion/vim-easymotion'
 " Plug 'majutsushi/tagbar'
-Plug 'vim-scripts/taglist.vim'
+" Plug 'vim-scripts/taglist.vim'
 Plug 'milkypostman/vim-togglelist'
 Plug 'mileszs/ack.vim'
 Plug 'moll/vim-bbye' "for Bdelete
@@ -78,9 +78,10 @@ Plug 'pangloss/vim-javascript'
 " Plug 'modille/groovy.vim'
 Plug 'git@github.com:martinda/Jenkinsfile-vim-syntax.git'
 Plug 'vim-scripts/groovyindent-unix'
+Plug 'OmniSharp/omnisharp-vim'
 
-Plug 'HerringtonDarkholme/yats.vim'
-" Plug 'leafgarland/typescript-vim'
+" Plug 'HerringtonDarkholme/yats.vim'
+Plug 'leafgarland/typescript-vim'
 if !exists('g:gui_oni')
   Plug 'mhartington/nvim-typescript', {'do': './install.sh'}
 endif
@@ -257,6 +258,7 @@ set mouse=a                 " Automatically enable mouse usage
 set mousehide               " Hide the mouse cursor while typing
 set tabpagemax=15               " Only show 15 tabs
 set autowrite                   " For GoBuild
+set signcolumn=yes
 
 set indentkeys+=0.
 
@@ -274,6 +276,7 @@ autocmd FileType make setlocal ts=8 sts=8 sw=8 noexpandtab
 autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
 autocmd FileType python setlocal ts=4 sts=4 sw=4 expandtab
 autocmd FileType groovy setlocal ts=4 sts=4 sw=4 expandtab
+autocmd FileType cs setlocal ts=4 sts=4 sw=4 expandtab
 
 " Golang
 augroup go
@@ -314,18 +317,57 @@ function! s:build_go_files()
   endif
 endfunction
 
+" C#
+augroup omnisharp_commands
+  autocmd!
+
+  " Show type information automatically when the cursor stops moving
+  autocmd CursorHold *.cs call OmniSharp#TypeLookupWithoutDocumentation()
+
+  " The following commands are contextual, based on the cursor position.
+  autocmd FileType cs nnoremap <buffer> <C-]> :OmniSharpGotoDefinition<CR>
+  autocmd FileType cs nnoremap <buffer> <Leader>fi :OmniSharpFindImplementations<CR>
+  autocmd FileType cs nnoremap <buffer> <Leader>fs :OmniSharpFindSymbol<CR>
+  autocmd FileType cs nnoremap <buffer> <Leader>fu :OmniSharpFindUsages<CR>
+
+  " Finds members in the current buffer
+  autocmd FileType cs nnoremap <buffer> <Leader>fm :OmniSharpFindMembers<CR>
+
+  autocmd FileType cs nnoremap <buffer> <Leader>fx :OmniSharpFixUsings<CR>
+  autocmd FileType cs nnoremap <buffer> <Leader>tt :OmniSharpTypeLookup<CR>
+  autocmd FileType cs nnoremap <buffer> <Leader>dc :OmniSharpDocumentation<CR>
+  autocmd FileType cs nnoremap <buffer> <C-\> :OmniSharpSignatureHelp<CR>
+  autocmd FileType cs inoremap <buffer> <C-\> <C-o>:OmniSharpSignatureHelp<CR>
+
+
+  " Navigate up and down by method/property/field
+  autocmd FileType cs nnoremap <buffer> <C-k> :OmniSharpNavigateUp<CR>
+  autocmd FileType cs nnoremap <buffer> <C-j> :OmniSharpNavigateDown<CR>
+
+  " Rename with dialog
+  autocmd FileType cs nnoremap <buffer> <Leader>nm :OmniSharpRename<CR>
+
+  autocmd FileType cs nnoremap <buffer> <Leader>cf :OmniSharpCodeFormat<CR>
+
+  " Add syntax highlighting for types and interfaces
+  autocmd FileType cs nnoremap <buffer> <Leader>th :OmniSharpHighlightTypes<CR>
+augroup END
+
 " Typescript
-if exists('g:gui_oni')
-  augroup typescript
-    autocmd FileType typescript let b:deoplete_disable_auto_complete=1
-    autocmd FileType typescript nmap <C-]> gd
-  augroup END
-endif
+" if exists('g:gui_oni')
+  " augroup typescript
+    " autocmd FileType typescript let b:deoplete_disable_auto_complete=1
+    " autocmd FileType typescript nnoremap <C-]> gd
+  " augroup END
+" endif
 
 augroup typescript
   autocmd!
-  autocmd FileType typescript nmap <silent> <c-i> :TSType<cr>
-  autocmd FileType Typescript nmap <Leader>re :TSRefs<cr>
+  " autocmd FileType typescript nunmap <c-]>
+  autocmd FileType typescript nnoremap <c-]> :TSDef<cr>
+  autocmd FileType typescript nnoremap <silent> <c-i> :TSType<cr>
+  autocmd FileType typescript nnoremap <Leader>re :TSRename<cr>
+  autocmd FileType typescript nnoremap <Leader>rf :TSRefs<cr>
 augroup END
 
 " ----------------------------------------------------------------------------
@@ -511,6 +553,9 @@ function! g:Multiple_cursors_after()
 endfunction
 
 call deoplete#custom#source('ultisnips', 'rank', 1000)
+call deoplete#custom#option('sources', {
+      \ 'cs': ['omnisharp'],
+      \})
 
 " UltiSnips
 let g:UltiSnipsExpandTrigger       ="<c-j>"
@@ -523,8 +568,8 @@ let g:tern#command = ["tern"]
 let g:tern#arguments = ["--persistent"]
 
 " TagBar
-nnoremap <silent> <F8> :TagbarToggle<CR>
-nnoremap <silent> <leader>t :TagbarToggle<CR>
+" nnoremap <silent> <F8> :TagbarToggle<CR>
+" nnoremap <silent> <leader>t :TagbarToggle<CR>
 
 " indent_guides
 let g:indent_guides_start_level = 2
@@ -556,7 +601,7 @@ nmap <silent> <leader>j <Plug>(jsdoc)
 " let g:neomake_javascript_enabled_makers = ['eslint']
 
 " if exists('g:gui_oni')
-  " let g:neomake_typescript_enabled_makers = ['tslint']
+" let g:neomake_typescript_enabled_makers = ['tslint']
 " endif
 
 " let g:neomake_go_enabled_makers = []
@@ -648,31 +693,11 @@ let g:deoplete#sources#go#gocode_binary = "/Users/jsl/go/bin/gocode"
 if !exists('g:gui_oni')
   " let g:nvim_typescript#type_info_on_hold = 1
 endif
-let g:nvim_typescript#default_mappings = 1
-let g:nvim_typescript#diagnosticsEnable = 0
+" let g:nvim_typescript#default_mappings = 1
+let g:nvim_typescript#diagnostics_enable = 0
 
 " jsx
 let g:jsx_ext_required = 0
-
-" tagbar
-let g:tagbar_type_typescript = {
-  \ 'ctagsbin' : 'tstags',
-  \ 'ctagsargs' : '-f-',
-  \ 'kinds': [
-    \ 'e:enums:0:1',
-    \ 'f:function:0:1',
-    \ 't:typealias:0:1',
-    \ 'M:Module:0:1',
-    \ 'I:import:0:1',
-    \ 'i:interface:0:1',
-    \ 'C:class:0:1',
-    \ 'm:method:0:1',
-    \ 'p:property:0:1',
-    \ 'v:variable:0:1',
-    \ 'c:const:0:1',
-  \ ],
-  \ 'sort' : 0
-\ }
 
 " nerdcommenter
 " Add spaces after comment delimiters by default
@@ -682,15 +707,16 @@ let g:NERDSpaceDelims = 1
 let g:NERDTrimTrailingWhitespace = 1
 
 " taglist
-let g:Tlist_Use_Right_Window = 1
+" let g:Tlist_Use_Right_Window = 1
 
 " ale
 let g:ale_sign_column_always = 1
 nmap <silent> <leader>k <Plug>(ale_previous_wrap)
 nmap <silent> <leader>j <Plug>(ale_next_wrap)
 let g:ale_linters = {
-\   'typescript': ['tslint', 'tsserver', 'typecheck'],
-\}
+      \   'typescript': ['tslint', 'tsserver', 'typecheck'],
+      \   'cs': ['OmniSharp'],
+      \}
 
 " pyenv
 " let g:python_host_prog = '/Users/jsl/.pyenv/versions/neovim2/bin/python'
