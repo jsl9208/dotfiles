@@ -31,13 +31,15 @@ endif
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-unimpaired'
-Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
+Plug 'honza/vim-snippets'
+" Plug 'SirVer/ultisnips'
 Plug 'jiangmiao/auto-pairs'
 Plug 'mbbill/undotree', { 'on': 'UndotreeToggle' }
-" Plug 'ternjs/tern_for_vim'
-Plug 'Shougo/deoplete.nvim'
-Plug 'zchee/deoplete-go', { 'do': 'make'}
-Plug 'zchee/deoplete-jedi'
+" Plug 'neoclide/coc.nvim', {'do': { -> coc#util#install()}}
+Plug 'neoclide/coc.nvim', {'tag': '*', 'do': { -> coc#util#install()}}
+" Plug 'Shougo/deoplete.nvim'
+" Plug 'zchee/deoplete-go', { 'do': 'make'}
+" Plug 'zchee/deoplete-jedi'
 "Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
 " Plug 'ervandew/supertab'
 Plug 'scrooloose/nerdcommenter'
@@ -57,11 +59,11 @@ Plug 'easymotion/vim-easymotion'
 " Plug 'majutsushi/tagbar'
 " Plug 'vim-scripts/taglist.vim'
 Plug 'milkypostman/vim-togglelist'
-Plug 'mileszs/ack.vim'
+" Plug 'mileszs/ack.vim'
 Plug 'moll/vim-bbye' "for Bdelete
 
 " Git
-Plug 'tpope/vim-fugitive'
+" Plug 'tpope/vim-fugitive'
 Plug 'airblade/vim-gitgutter'
 
 " Lint
@@ -77,14 +79,15 @@ Plug 'pangloss/vim-javascript'
 "Plug 'mxw/vim-jsx'
 " Plug 'modille/groovy.vim'
 Plug 'git@github.com:martinda/Jenkinsfile-vim-syntax.git'
-Plug 'vim-scripts/groovyindent-unix'
+" Plug 'vim-scripts/groovyindent-unix'
 Plug 'OmniSharp/omnisharp-vim'
+Plug 'google/vim-jsonnet'
 
 " Plug 'HerringtonDarkholme/yats.vim'
 Plug 'leafgarland/typescript-vim'
-if !exists('g:gui_oni')
-  Plug 'mhartington/nvim-typescript', {'do': './install.sh'}
-endif
+" if !exists('g:gui_oni')
+  " Plug 'mhartington/nvim-typescript', {'do': './install.sh'}
+" endif
 
 Plug 'othree/html5.vim'
 Plug 'vim-scripts/HTML-AutoCloseTag'
@@ -177,6 +180,10 @@ set wildmode=list:longest
 set noerrorbells
 set updatetime=250
 set cmdheight=2
+
+" don't give |ins-completion-menu| messages.
+set shortmess+=c
+
 if !exists('g:gui_oni')
   set clipboard=unnamed
 endif
@@ -189,7 +196,7 @@ set linespace=0                 " No extra spaces between rows
 set scrolloff=3 " Keep the cursor visible within 3 lines when scrolling
 set scrolljump=5                " Lines to scroll when cursor leaves screen
 set list
-set foldmethod=syntax
+set foldmethod=manual
 set foldlevelstart=4
 set completeopt-=preview
 
@@ -266,109 +273,6 @@ highlight clear SignColumn      " SignColumn should match background
 highlight clear LineNr          " Current line number row will have same background color in relative mode
 
 command! -nargs=0 Sw w !sudo tee % > /dev/null
-
-" ----------------------------------------------------------------------------
-" Filetypes
-" ----------------------------------------------------------------------------
-
-" Syntax of these languages is fussy over tabs Vs spaces
-autocmd FileType make setlocal ts=8 sts=8 sw=8 noexpandtab
-autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
-autocmd FileType python setlocal ts=4 sts=4 sw=4 expandtab
-autocmd FileType groovy setlocal ts=4 sts=4 sw=4 expandtab
-autocmd FileType cs setlocal ts=4 sts=4 sw=4 expandtab
-
-" Golang
-augroup go
-  autocmd!
-  " Show by default 4 spaces for a tab
-  autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
-  " :GoBuild and :GoTestCompile
-  autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
-  " :GoTest
-  autocmd FileType go nmap <leader>t  <Plug>(go-test)
-  " :GoRun
-  autocmd FileType go nmap <silent> <leader>r :Topen <bar> T go run *.go <cr>
-  " :GoDoc
-  autocmd FileType go nmap <Leader>d <Plug>(go-doc)
-  " :GoCoverageToggle
-  autocmd FileType go nmap <Leader>o <Plug>(go-coverage-toggle)
-  " :GoInfo
-  autocmd FileType go nmap <c-i> <Plug>(go-info)
-  " :GoMetaLinter
-  autocmd FileType go nmap <Leader>l <Plug>(go-metalinter)
-  " :GoRename
-  autocmd FileType go nmap <Leader>re <Plug>(go-rename)
-  autocmd FileType go nmap <c-]> <Plug>(go-def)
-  " :GoAlternate  commands :A, :AV, :AS and :AT
-  autocmd Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
-  autocmd Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
-  autocmd Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
-  autocmd Filetype go command! -bang AT call go#alternate#Switch(<bang>0, 'tabe')
-augroup END
-
-" run :GoBuild or :GoTestCompile based on the go file
-function! s:build_go_files()
-  let l:file = expand('%')
-  if l:file =~# '^\f\+_test\.go$'
-    call go#test#Test(0, 1)
-  elseif l:file =~# '^\f\+\.go$'
-    call go#cmd#Build(0)
-  endif
-endfunction
-
-" C#
-augroup omnisharp_commands
-  autocmd!
-
-  " Show type information automatically when the cursor stops moving
-  autocmd CursorHold *.cs call OmniSharp#TypeLookupWithoutDocumentation()
-
-  " The following commands are contextual, based on the cursor position.
-  autocmd FileType cs nnoremap <buffer> <C-]> :OmniSharpGotoDefinition<CR>
-  autocmd FileType cs nnoremap <buffer> <Leader>fi :OmniSharpFindImplementations<CR>
-  autocmd FileType cs nnoremap <buffer> <Leader>fs :OmniSharpFindSymbol<CR>
-  autocmd FileType cs nnoremap <buffer> <Leader>fu :OmniSharpFindUsages<CR>
-
-  " Finds members in the current buffer
-  autocmd FileType cs nnoremap <buffer> <Leader>fm :OmniSharpFindMembers<CR>
-
-  autocmd FileType cs nnoremap <buffer> <Leader>fx :OmniSharpFixUsings<CR>
-  autocmd FileType cs nnoremap <buffer> <Leader>tt :OmniSharpTypeLookup<CR>
-  autocmd FileType cs nnoremap <buffer> <Leader>dc :OmniSharpDocumentation<CR>
-  autocmd FileType cs nnoremap <buffer> <C-\> :OmniSharpSignatureHelp<CR>
-  autocmd FileType cs inoremap <buffer> <C-\> <C-o>:OmniSharpSignatureHelp<CR>
-
-
-  " Navigate up and down by method/property/field
-  autocmd FileType cs nnoremap <buffer> <C-k> :OmniSharpNavigateUp<CR>
-  autocmd FileType cs nnoremap <buffer> <C-j> :OmniSharpNavigateDown<CR>
-
-  " Rename with dialog
-  autocmd FileType cs nnoremap <buffer> <Leader>nm :OmniSharpRename<CR>
-
-  autocmd FileType cs nnoremap <buffer> <Leader>cf :OmniSharpCodeFormat<CR>
-
-  " Add syntax highlighting for types and interfaces
-  autocmd FileType cs nnoremap <buffer> <Leader>th :OmniSharpHighlightTypes<CR>
-augroup END
-
-" Typescript
-" if exists('g:gui_oni')
-  " augroup typescript
-    " autocmd FileType typescript let b:deoplete_disable_auto_complete=1
-    " autocmd FileType typescript nnoremap <C-]> gd
-  " augroup END
-" endif
-
-augroup typescript
-  autocmd!
-  " autocmd FileType typescript nunmap <c-]>
-  autocmd FileType typescript nnoremap <c-]> :TSDef<cr>
-  autocmd FileType typescript nnoremap <silent> <c-i> :TSType<cr>
-  autocmd FileType typescript nnoremap <Leader>re :TSRename<cr>
-  autocmd FileType typescript nnoremap <Leader>rf :TSRefs<cr>
-augroup END
 
 " ----------------------------------------------------------------------------
 " Key mappings
@@ -506,70 +410,11 @@ let g:airline#extensions#whitespace#enabled = 0
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#buffer_nr_show = 1
 
-"function! RefreshUI()
-"if exists(':AirlineRefresh')
-"AirlineRefresh
-"else
-"" Clear & redraw the screen, then redraw all statuslines.
-"redraw!
-"redrawstatus!
-"endif
-"endfunction
-
-"au BufWritePost .vimrc source $MYVIMRC | :call RefreshUI()
-
-" Fugitive
-nnoremap <silent> <leader>gs :Gstatus<CR>
-nnoremap <silent> <leader>gd :Gdiff<CR>
-nnoremap <silent> <leader>gc :Gcommit<CR>
-nnoremap <silent> <leader>gb :Gblame<CR>
-nnoremap <silent> <leader>gl :Glog<CR>
-nnoremap <silent> <leader>gp :Git push<CR>
-nnoremap <silent> <leader>gr :Gread<CR>
-nnoremap <silent> <leader>gw :Gwrite<CR>
-nnoremap <silent> <leader>ge :Gedit<CR>
-" Mnemonic _i_nteractive
-nnoremap <silent> <leader>gi :Git add -p %<CR>
-nnoremap <silent> <leader>gg :SignifyToggle<CR>
-
-" Use deoplete.
-let g:deoplete#enable_at_startup = 1
-let g:deoplete#file#enable_buffer_path = 1
-" let g:tern_request_timeout = 1
-" let g:tern_show_signature_in_pum = 0
-" let g:tern_remove_async_await = 1
-
-let g:SuperTabDefaultCompletionType = "<c-n>"
-autocmd CompleteDone * pclose!
-
-inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-
-function! g:Multiple_cursors_before()
-  let g:deoplete#disable_auto_complete = 1
-endfunction
-function! g:Multiple_cursors_after()
-  let g:deoplete#disable_auto_complete = 0
-endfunction
-
-call deoplete#custom#source('ultisnips', 'rank', 1000)
-call deoplete#custom#option('sources', {
-      \ 'cs': ['omnisharp'],
-      \})
-
 " UltiSnips
-let g:UltiSnipsExpandTrigger       ="<c-j>"
-let g:UltiSnipsJumpForwardTrigger  = "<c-j>"
-let g:UltiSnipsJumpBackwardTrigger = "<c-k>"
-let g:UltiSnipsSnippetDirectories=["UltiSnips", "mysnippets"]
-
-" Tern
-let g:tern#command = ["tern"]
-let g:tern#arguments = ["--persistent"]
-
-" TagBar
-" nnoremap <silent> <F8> :TagbarToggle<CR>
-" nnoremap <silent> <leader>t :TagbarToggle<CR>
+" let g:UltiSnipsExpandTrigger       ="<c-j>"
+" let g:UltiSnipsJumpForwardTrigger  = "<c-j>"
+" let g:UltiSnipsJumpBackwardTrigger = "<c-k>"
+" let g:UltiSnipsSnippetDirectories=["UltiSnips", "mysnippets"]
 
 " indent_guides
 let g:indent_guides_start_level = 2
@@ -584,27 +429,17 @@ let g:session_autosave = 'yes'
 let g:session_autoload = 'yes'
 
 " Ack.vim
-cnoreabbrev Ack Ack!
-nnoremap <Leader>a :Ack!<Space>
-if executable('ag')
-  let g:ackprg = 'ag --vimgrep'
-endif
+" cnoreabbrev Ack Ack!
+" nnoremap <Leader>a :Ack!<Space>
+" if executable('ag')
+  " let g:ackprg = 'ag --vimgrep'
+" endif
 
 " JsDoc
 let g:jsdoc_allow_input_prompt=1
 let g:jsdoc_enable_es6=1
 let g:jsdoc_input_description=1
 nmap <silent> <leader>j <Plug>(jsdoc)
-
-" Neomake
-" autocmd! BufWritePost * Neomake
-" let g:neomake_javascript_enabled_makers = ['eslint']
-
-" if exists('g:gui_oni')
-" let g:neomake_typescript_enabled_makers = ['tslint']
-" endif
-
-" let g:neomake_go_enabled_makers = []
 
 " Fzf
 let g:fzf_command_prefix = 'Fzf'
@@ -614,14 +449,14 @@ let g:fzf_action = {
       \ }
 nnoremap <c-p> :FilesMru --tiebreak=end<CR>
 nnoremap <silent> <leader>. :FzfHistory<CR>
-nnoremap <silent> <leader>/ :execute 'FzfAg ' . input('Ag/')<CR>
+nnoremap <silent> <leader>a :execute 'FzfAg ' . input('Ag/')<CR>
 nnoremap <silent> <leader>fb :FzfBuffers<CR>
 nnoremap <silent> <leader>fl :FzfBLines<CR>
 nnoremap <silent> <leader>ft :FzfBTags<CR>
 nnoremap <silent> <leader>fT :FzfTags<CR>
 
-nnoremap <silent> K :call SearchWordWithAg()<CR>
-vnoremap <silent> K :call SearchVisualSelectionWithAg()<CR>
+nnoremap <silent> S :call SearchWordWithAg()<CR>
+vnoremap <silent> S :call SearchVisualSelectionWithAg()<CR>
 nnoremap <silent> <leader>fc :FzfBCommits<CR>
 nnoremap <silent> <leader>fC :FzfCommits<CR>
 
@@ -669,6 +504,7 @@ let g:neoterm_default_mod = "botright"
 let g:vim_markdown_conceal = 0
 
 " vim-go
+let g:go_doc_keywordprg_enabled = 0
 let g:go_fmt_command = "goimports"
 let g:go_fmt_fail_silently = 1
 let g:go_highlight_types = 1
@@ -682,12 +518,10 @@ let g:go_highlight_build_constraints = 1
 let g:go_list_type = "quickfix"
 let g:go_term_mode = "split"
 let g:go_def_mapping_enabled = 0
-let g:go_metalinter_autosave = 1
-let g:go_metalinter_excludes = ["'or be unexported'"]
-"let g:go_metalinter_autosave_enabled = ['vet', 'golint']
+" let g:go_metalinter_autosave = 1
 
 " deoplete-go
-let g:deoplete#sources#go#gocode_binary = "/Users/jsl/go/bin/gocode"
+" let g:deoplete#sources#go#gocode_binary = "/Users/jsl/Projects/go/bin/gocode"
 
 " nvim_typescript
 if !exists('g:gui_oni')
@@ -717,13 +551,205 @@ let g:ale_linters = {
       \   'typescript': ['tslint', 'tsserver', 'typecheck'],
       \   'cs': ['OmniSharp'],
       \}
+let g:ale_go_gometalinter_options='--fast --exclude "should have comment"'
+" let g:ale_typescript_tsserver_use_global = 1
+let g:ale_fixers = {
+\   '*': ['remove_trailing_lines', 'trim_whitespace'],
+\   'javascript': ['eslint'],
+\   'typescript': ['tslint'],
+\}
+let g:ale_fix_on_save = 1
+let g:ale_javascript_eslint_suppress_missing_config = 1
+let g:ale_pattern_options = {
+\   '.*\.java$': {'ale_enabled': 0},
+\   '.*\.go$': {'ale_enabled': 0},
+\}
 
 " pyenv
 " let g:python_host_prog = '/Users/jsl/.pyenv/versions/neovim2/bin/python'
 let g:python3_host_prog = '/Users/jsl/.pyenv/versions/neovim3/bin/python'
 
-" let g:deoplete#enable_profile = 1
-" call deoplete#enable_logging('DEBUG', 'deoplete.log')
-" let g:deoplete#sources#jedi#debug_server = 1
+" COC
+" Use tab for trigger completion with characters ahead and navigate.
+" Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+" Use <c-space> for trigger completion.
+inoremap <silent><expr> <c-space> coc#refresh()
+
+" Use <cr> for confirm completion, `<C-g>u` means break undo chain at current position.
+" Coc only does snippet and additional edit on confirm.
+inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+
+" Use `[c` and `]c` for navigate diagnostics
+nmap <silent> [c <Plug>(coc-diagnostic-prev)
+nmap <silent> ]c <Plug>(coc-diagnostic-next)
+
+" Remap keys for gotos
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+" Use K for show documentation in preview window
+nnoremap <silent> K :call <SID>show_documentation()<CR>
+
+function! s:show_documentation()
+  if &filetype == 'vim'
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
+
+" Highlight symbol under cursor on CursorHold
+" autocmd CursorHold * silent call CocActionAsync('highlight')
+
+" Remap for rename current word
+nmap <leader>rn <Plug>(coc-rename)
+
+" Remap for format selected region
+vmap <leader>f  <Plug>(coc-format-selected)
+nmap <leader>f  <Plug>(coc-format-selected)
+
+augroup cocformat
+  autocmd!
+  " Setup formatexpr specified filetype(s).
+  autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
+  autocmd FileType typescript,java,groovy,go nmap <silent> <c-]> <Plug>(coc-definition)
+  " Update signature help on jump placeholder
+  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+augroup end
+
+" Remap for do codeAction of selected region, ex: `<leader>aap` for current paragraph
+" vmap <leader>a  <Plug>(coc-codeaction-selected)
+" nmap <leader>a  <Plug>(coc-codeaction-selected)
+
+" Remap for do codeAction of current line
+" nmap <leader>ac  <Plug>(coc-codeaction)
+" Fix autofix problem of current line
+" nmap <leader>qf  <Plug>(coc-fix-current)
+
+" Use `:Format` for format current buffer
+command! -nargs=0 Format :call CocAction('format')
+
+" Use `:Fold` for fold current buffer
+command! -nargs=? Fold :call CocAction('fold', <f-args>)
+
+" Use <C-j> for both expand and jump (make expand higher priority.)
+imap <C-j> <Plug>(coc-snippets-expand-jump)
+
+" ----------------------------------------------------------------------------
+" Filetypes
+" ----------------------------------------------------------------------------
+
+" Syntax of these languages is fussy over tabs Vs spaces
+autocmd FileType make setlocal ts=8 sts=8 sw=8 noexpandtab
+autocmd FileType yaml setlocal ts=2 sts=2 sw=2 expandtab
+autocmd FileType python setlocal ts=4 sts=4 sw=4 expandtab
+" autocmd FileType groovy setlocal ts=4 sts=4 sw=4 expandtab
+autocmd FileType cs setlocal ts=4 sts=4 sw=4 expandtab
+autocmd BufNew,BufNewFile,BufRead *.groovy :set syntax=java
+
+" Disable json quote conceal
+autocmd Filetype json let b:indentLine_enabled = 0
+
+" Golang
+augroup go
+  autocmd!
+  " Show by default 4 spaces for a tab
+  autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4
+  " :GoBuild and :GoTestCompile
+  autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
+  " :GoTest
+  autocmd FileType go nmap <leader>t  <Plug>(go-test)
+  " :GoRun
+  autocmd FileType go nmap <silent> <leader>r :Topen <bar> T go run *.go <cr>
+  " :GoDoc
+  " autocmd FileType go nmap <Leader>d <Plug>(go-doc)
+  " :GoCoverageToggle
+  " autocmd FileType go nmap <Leader>o <Plug>(go-coverage-toggle)
+  " :GoInfo
+  " autocmd FileType go nmap <Leader>i <Plug>(go-info)
+  " :GoRename
+  " autocmd FileType go nmap <Leader>rn <Plug>(go-rename)
+  " autocmd FileType go nmap <c-]> <Plug>(go-def)
+  " :GoAlternate  commands :A, :AV, :AS and :AT
+  " autocmd Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
+  " autocmd Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
+  " autocmd Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
+  " autocmd Filetype go command! -bang AT call go#alternate#Switch(<bang>0, 'tabe')
+augroup END
+
+" run :GoBuild or :GoTestCompile based on the go file
+function! s:build_go_files()
+  let l:file = expand('%')
+  if l:file =~# '^\f\+_test\.go$'
+    call go#test#Test(0, 1)
+  elseif l:file =~# '^\f\+\.go$'
+    call go#cmd#Build(0)
+  endif
+endfunction
+
+" C#
+augroup omnisharp_commands
+  autocmd!
+
+  " Show type information automatically when the cursor stops moving
+  autocmd CursorHold *.cs call OmniSharp#TypeLookupWithoutDocumentation()
+
+  " The following commands are contextual, based on the cursor position.
+  autocmd FileType cs nnoremap <buffer> <C-]> :OmniSharpGotoDefinition<CR>
+  autocmd FileType cs nnoremap <buffer> <Leader>fi :OmniSharpFindImplementations<CR>
+  autocmd FileType cs nnoremap <buffer> <Leader>fs :OmniSharpFindSymbol<CR>
+  autocmd FileType cs nnoremap <buffer> <Leader>fu :OmniSharpFindUsages<CR>
+
+  " Finds members in the current buffer
+  autocmd FileType cs nnoremap <buffer> <Leader>fm :OmniSharpFindMembers<CR>
+
+  autocmd FileType cs nnoremap <buffer> <Leader>fx :OmniSharpFixUsings<CR>
+  autocmd FileType cs nnoremap <buffer> <Leader>tt :OmniSharpTypeLookup<CR>
+  autocmd FileType cs nnoremap <buffer> <Leader>dc :OmniSharpDocumentation<CR>
+  autocmd FileType cs nnoremap <buffer> <C-\> :OmniSharpSignatureHelp<CR>
+  autocmd FileType cs inoremap <buffer> <C-\> <C-o>:OmniSharpSignatureHelp<CR>
+
+
+  " Navigate up and down by method/property/field
+  autocmd FileType cs nnoremap <buffer> <C-k> :OmniSharpNavigateUp<CR>
+  autocmd FileType cs nnoremap <buffer> <C-j> :OmniSharpNavigateDown<CR>
+
+  " Rename with dialog
+  autocmd FileType cs nnoremap <buffer> <Leader>nm :OmniSharpRename<CR>
+
+  autocmd FileType cs nnoremap <buffer> <Leader>cf :OmniSharpCodeFormat<CR>
+
+  " Add syntax highlighting for types and interfaces
+  autocmd FileType cs nnoremap <buffer> <Leader>th :OmniSharpHighlightTypes<CR>
+augroup END
+
+" Typescript
+" if exists('g:gui_oni')
+  " augroup typescript
+    " autocmd FileType typescript let b:deoplete_disable_auto_complete=1
+    " autocmd FileType typescript nnoremap <C-]> gd
+  " augroup END
+" endif
+
+" augroup typescript
+  " autocmd!
+  " " autocmd FileType typescript nunmap <c-]>
+  " autocmd FileType typescript nnoremap <c-]> :TSDef<cr>
+  " autocmd FileType typescript nnoremap <Leader>i :TSType<cr>
+  " autocmd FileType typescript nnoremap <Leader>re :TSRename<cr>
+  " autocmd FileType typescript nnoremap <Leader>rf :TSRefs<cr>
+" augroup END
 
 filetype plugin indent on
